@@ -15,40 +15,77 @@ char thisc;
 num ds[dslen];
 num dsp;
 
-#define rslen 16
-/* #define rspad */
-num rs[rslen];
-num rsp;
+#define cslen 16
+/* #define cspad */
+num cs[cslen];
+num csp;
 
-void panic()
+#define stlen 0x10000
+num st[stlen];
+num stp, stlink;
+
+enum { cif = -1, cloop = -2 };
+
+void panic(const char m[]) /* to do: deallocation */
 {
+	fflush(stdout);
+	fprintf(stderr, "%s at character no. %d \"%c\" (ascii %d)\n", m, pra, thisc, thisc);
 	exit(1);
 }
 
 void push(num n)
 {
-	if(dsp==dslen){ puts("overflow"); panic(); };
+	if(dsp==dslen) panic("overflow");
 	ds[dsp++] = n;
 }
 
 num drop()
 {
-	if(dsp==0){ puts("underflow"); panic(); };
+	if(dsp==0) panic("underflow");
 	return ds[--dsp];
+}
+
+void cpush(num n)
+{
+	if(csp==cslen) panic("control overflow");
+	cs[csp++] = n;
+}
+
+num cfetch() { return cs[csp-1]; }
+
+num cdrop()
+{
+	if(csp==0) panic("control underflow");
+	return cs[--csp];
 }
 
 char nextc()
 {
 	char c = pr[pra++];
-	if(c==0) panic();
+	if(c==0) panic("unexpected end of program");
 	return c;
+}
+
+void skipc(char left, char right)
+{
+	int level = 1;
+	char c;
+	do
+	{
+		c = nextc();
+		if(c==left) ++level; else if(c==right) --level;
+	}
+	while(level);
 }
 
 /* symbols */
 
-void end(){ exit(0); } /* to do : check return stack */
+void end(){
+	if(csp!=0) panic("control mismatch");
+	exit(0);
+}
 
-void unknown(){ printf("unknown symbol \"%c\" with value %d and address %d\n", thisc, thisc, pra); panic(); }
+void unknown(){ panic("unknown symbol"); }
 
 void space(){  }
 
@@ -63,13 +100,25 @@ void hash(){ push(0); }
 
 void dollar(){ /* to do */ }
 
-void percent(){ /* to do */ }
+void percent(){ num x = drop(); num y = drop(); push(x); push(y); }
 
-void apostrophe(){ /* to do */ }
+void apostrophe(){ while(nextc()!='\n'); }
 
-void leftpar(){ /* to do */ }
+void leftpar(){ cpush(cloop); }
 
-void rightpar(){ /* to do */ }
+void rightpar()
+{
+	int level = 0;
+	char c;
+	do
+	{
+		if(pra==0) panic("control mismatch");
+		c = pr[--pra];
+		if(c==')') ++level; else if(c=='(') --level;
+	}
+	while(level);
+	++pra;
+}
 
 void astesrisk(){ push(drop()*drop()); }
 
@@ -79,38 +128,70 @@ void comma(){ /* to do */ }
 
 void minus(){ num x = drop(); push(drop()-x); }
 
-void dot(){ /* to do */ }
+void dot(){ drop(); }
 
 void slash(){ num x = drop(); push(drop()/x); }
 
-
 void digit(){ push(drop()*10 + thisc-'0'); }
 
-void colon(){ /* to do */ }
+void colon(){ num x =  drop(); push(x); push(x); }
 
 void semicolon(){ /* to do */ }
 
-void less(){ /* to do */ }
+void less(){ push(drop()<0 ? -1 : 0); }
 
 void equals(){ /* to do */ }
 
 void greater(){ /* to do */ }
 
-void question(){ /* to do */ }
+void question(){ num x; scanf("%u", &x); push(x); }
 
 void arrobe(){ /* to do */ }
 
 void letter(){ push(drop()*26 + thisc-'A'); }
 
-void leftbr(){ /* to do */ }
+void leftbr()
+{
+	if(drop())
+	{
+		cpush(cif);
+	}
+	else
+	{
+		int level = 1;
+		char c;
+		do
+		{
+			c=nextc();
+			if(level==1 && c=='|')
+			{
+				cpush(cif);
+				break;
+			}
+			if(c=='[') ++level; else if(c==']') --level;
+		}
+		while(level);
+	}
+}
 
-void caret(){ /* to do */ }
+void caret()
+{
+	if(drop()==0)
+	{
+		if(cdrop()!=cloop) panic("control mismatch");
+		skipc('(', ')');
+	}
+}
 
-void rightbr(){ /* to do */ }
+void rightbr(){ if(cdrop()!=cif) panic("control mismatch"); }
 
 void lowercase(){ thisc = thisc + ('A'-'a'); letter(); }
 
-void pipe(){ /* to do */ }
+void pipe()
+{
+	if(cdrop()!=cif) panic("control mismatch");
+	while(nextc()!=']');
+}
 
 void (*symbols[256])()={
 end, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
@@ -118,18 +199,18 @@ unknown, unknown, space, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 
-space, exclamation, quote, hash, unknown, unknown, unknown, unknown,
-unknown, unknown, astesrisk, plus, unknown, minus, unknown, slash,
+space, exclamation, quote, hash, unknown, percent, unknown, apostrophe,
+leftpar, rightpar, astesrisk, plus, unknown, minus, dot, slash,
 digit, digit, digit, digit, digit, digit, digit, digit,
-digit, digit, unknown, unknown, unknown, unknown, unknown, unknown,
+digit, digit, colon, unknown, less, unknown, unknown, question,
 unknown, letter, letter, letter, letter, letter, letter, letter,
 letter, letter, letter, letter, letter, letter, letter, letter,
 letter, letter, letter, letter, letter, letter, letter, letter,
-letter, letter, letter, unknown, unknown, unknown, unknown, unknown,
+letter, letter, letter, leftbr, unknown, rightbr, caret, unknown,
 unknown, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
 lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
 lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
-lowercase, lowercase, lowercase, unknown, unknown, unknown, unknown, unknown,
+lowercase, lowercase, lowercase, unknown, pipe, unknown, unknown, unknown,
 
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
@@ -153,19 +234,24 @@ int main(int argc, char **argv)
 {
 	if (argc!=2)
 	{
-		puts("source file not found");
+		fputs("provide the source file\n", stderr);
 		return 1;
 	}
 	FILE *f = fopen(argv[1], "rb");
+	if(f==NULL)
+	{
+		fputs("source file not found\n", stderr);
+		return 1;
+	}
 	pr[fread(pr, 1, prlen, f)] = 0;
 	fclose(f);
 	/* interpret */
+	stlink = 0, stp = 1;
 	pra = 0;
 	for(;;)
 	{
 		thisc = pr[pra++];
 		symbols[(signed char) thisc]();
 	}
-	
 	return 0;
 }
