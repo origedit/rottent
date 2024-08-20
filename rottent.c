@@ -209,6 +209,7 @@ void caret()
 	if(drop()==0)
 	{
 		if(cdrop()!=cloop) panic("control mismatch");
+		cdrop();
 		skipc('(', ')');
 	}
 }
