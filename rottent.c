@@ -8,20 +8,23 @@ char pr[prlen];
 num pra;
 char thisc;
 
-#define dslen 16
+#define dslen 32
+/* it really should be 10 */
 num ds[dslen];
 num dsp;
 
-#define cslen 16
-num cs[cslen];
+#define cslen 32
+struct csx{
+	enum{ cif = -1, cloop = -2, cmacro = -3 }type;
+	num x;
+};
+struct csx cs[cslen];
 num csp;
 
 #define stlen 0x10000
 #define stpad 16
 num st[stlen];
 num stp, stlink;
-
-enum { cif = -1, cloop = -2 };
 
 void panic(const char m[])
 {
@@ -42,17 +45,21 @@ num drop()
 	return ds[--dsp];
 }
 
-void cpush(num n)
+void cpush(int type, num n)
 {
-	if(csp==cslen) panic("control overflow");
-	cs[csp++] = n;
+	if(csp==cslen) panic("decisions too deep");
+	cs[csp++] = (struct csx){type, n};
 }
 
-num cfetch() { return cs[csp-1]; }
-
-num cdrop()
+struct csx cfetch()
 {
-	if(csp==0) panic("control underflow");
+	if(csp==0) panic("broken control");
+	return cs[csp-1];
+}
+
+struct csx cdrop()
+{
+	if(csp==0) panic("broken control");
 	return cs[--csp];
 }
 
@@ -103,13 +110,13 @@ void skipc(char left, char right)
 /* symbols */
 
 void end(){
-	if(csp!=0) panic("control mismatch");
+	if(csp!=0) panic("unexpected end of program");
 	exit(0);
 }
 
 void unknown(){ panic("unknown symbol"); }
 
-void space(){  }
+void space(){}
 
 void exclamation(){ printf("%d", drop()); }
 
@@ -123,20 +130,20 @@ void hash(){ push(0); }
 void dollar(){
 	num link = find(drop());
 	if(link==0) panic("macro not found");
-	cpush(pra);
+	cpush(cmacro, pra);
 	pra = st[link+2];
 }
 
-void percent(){ num x = drop(); num y = drop(); push(x); push(y); }
+void percent(){ num x = drop(), y = drop(); push(x); push(y); }
 
 void apostrophe(){ while(nextc()!='\n'); }
 
-void leftpar(){ cpush(pra); cpush(cloop); }
+void leftpar(){ cpush(cloop, pra); }
 
 void rightpar()
 {
-	if(csp<2 || cs[csp-1]!=cloop) panic("invalid loop");
-	pra = cs[csp-2];
+	if(cfetch().type!=cloop) panic("bad loop");
+	pra = cfetch().x;
 }
 
 void astesrisk(){ push(drop()*drop()); }
@@ -149,13 +156,22 @@ void minus(){ num x = drop(); push(drop()-x); }
 
 void dot(){ drop(); }
 
-void slash(){ num x = drop(); push(drop()/x); }
+void slash()
+{
+	num x = drop();
+	if(x==0) panic("division by zero");
+	push(drop()/x);
+}
 
 void digit(){ push(drop()*10 + thisc-'0'); }
 
 void colon(){ num x =  drop(); push(x); push(x); }
 
-void semicolon(){ pra = cdrop(); }
+void semicolon(){
+	struct csx c = cdrop();
+	if(c.type!=cmacro) panic("bad macro");
+	pra = c.x;
+}
 
 void less(){ push(drop()<0); }
 
@@ -182,7 +198,7 @@ void leftbr()
 {
 	if(drop())
 	{
-		cpush(cif);
+		cpush(cif, 0);
 	}
 	else
 	{
@@ -193,7 +209,7 @@ void leftbr()
 			c=nextc();
 			if(level==1 && c=='|')
 			{
-				cpush(cif);
+				cpush(cif, 0);
 				break;
 			}
 			if(c=='[') ++level; else if(c==']') --level;
@@ -202,14 +218,13 @@ void leftbr()
 	}
 }
 
-void rightbr(){ if(cdrop()!=cif) panic("control mismatch"); }
+void rightbr(){ if(cdrop().type!=cif) panic("bad branch"); }
 
 void caret()
 {
 	if(drop()==0)
 	{
-		if(cdrop()!=cloop) panic("control mismatch");
-		cdrop();
+		if(cdrop().type!=cloop) panic("bad loop");
 		skipc('(', ')');
 	}
 }
@@ -222,7 +237,7 @@ void leftcur(){ push(getc(stdin)); }
 
 void pipe()
 {
-	if(cdrop()!=cif) panic("control mismatch");
+	if(cdrop().type!=cif) panic("bad branch");
 	skipc('[', ']');
 }
 
@@ -267,7 +282,7 @@ unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown
 
 int main(int argc, char **argv)
 {
-	if (argc!=2)
+	if (argc<2)
 	{
 		fputs("provide the source file\n", stderr);
 		return 1;
@@ -284,10 +299,6 @@ int main(int argc, char **argv)
 	/* interpret */
 	stlink = 0, stp = 1;
 	pra = 0;
-	for(;;)
-	{
-		thisc = pr[pra++];
-		symbols[(signed char) thisc]();
-	}
-	return 0;
+	for(;;) symbols[(signed char)(thisc = pr[pra++])]();
+	return 0; /* this part is not reached */
 }

@@ -8,6 +8,8 @@ date of conception - 19.08.2024
 
 to do:
 - good char input
+- find out what exit() does
+- why is the executable so big??
 
 
 ## description
@@ -45,8 +47,8 @@ the program text and the storage may be stored in one memory region, if that mak
 - - (x y -- x-y)
 - * (x y -- x*y)
 - / (x y -- x/y)
-- [ (flag -- ) if
-- | ( -- ) else
+- [ (flag -- ) skip to `|` or `]` if the flag is false
+- | ( -- ) the false part of a branch
 - ] ( -- ) end if
 - < (x -- flag) check for negative
 - # ( -- ) push zero
@@ -130,7 +132,7 @@ next time the name VAR is referenced, the previous definition won't be found, an
 
 ## control flow
 
-an "if" structure looks like this
+decisions are done like this
 
 ```
 #TRUE>_ [ "true" | "false" ]
@@ -170,15 +172,15 @@ mouse chose to handle variables so primitively that it hurts their use and clari
 
 mouse handles macros like functions in algol-likes. i'm not sure how this feature is implemented, but it seems too complex to stay.
 
-the if-statement in mouse doesn't have an else part. as it turns out, its implementation is complicated.
+the branch statement in mouse doesn't have a false part. as it turns out, its implementation is complicated.
 
 reading programs written for mouse, for a long time i thought that `!` in text literals was a writing style and not a marker of newlines. in rottent you can write newlines either directly in  the text or as `#10}`.
 
 mouse didn't feel need for single character input and output. i added this feature in hope to make the language usable. without direct access to files, this decision seems naive.
 
-rottent has way more primitives than mouse. it could use less. rottent seems more complicated than mouse, while being just as weird to program.
+rottent has way more primitives than mouse. it could use less. rottent seems more complicated than mouse, while being just as weird to program, if not more.
 
-the working interpreter is in less than 300 lines of c (to do: count with cloc).
+the working interpreter is about 300 lines of c (to do: count with cloc).
 
 i'm unaware of why mouse is the way it is, mainly because the book on it is unobainable. i designed rottent to see what mouse would be like if you were able to get things done with it. in result i brang it closer to forth. indeed, if you need to get things done, just use forth.
 
