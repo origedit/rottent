@@ -1,4 +1,5 @@
 ## to do
 
+- single character input that doesnt suck
 - better stack error handling
-- the implementation of if is complicated. no wonder it's rudimentary in mouse
+- better error messages

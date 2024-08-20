@@ -131,20 +131,12 @@ void percent(){ num x = drop(); num y = drop(); push(x); push(y); }
 
 void apostrophe(){ while(nextc()!='\n'); }
 
-void leftpar(){ cpush(cloop); }
+void leftpar(){ cpush(pra); cpush(cloop); }
 
 void rightpar()
 {
-	int level = 0;
-	char c;
-	do
-	{
-		if(pra==0) panic("control mismatch");
-		c = pr[--pra];
-		if(c==')') ++level; else if(c=='(') --level;
-	}
-	while(level);
-	++pra;
+	if(csp<2 || cs[csp-1]!=cloop) panic("invalid loop");
+	pra = cs[csp-2];
 }
 
 void astesrisk(){ push(drop()*drop()); }
@@ -165,7 +157,7 @@ void colon(){ num x =  drop(); push(x); push(x); }
 
 void semicolon(){ pra = cdrop(); }
 
-void less(){ push(drop()<0 ? -1 : 0); }
+void less(){ push(drop()<0); }
 
 void equals(){ st[drop()] = drop(); }
 
@@ -225,13 +217,16 @@ void underscore(){ push(st[drop()]); }
 
 void lowercase(){ thisc = thisc + ('A'-'a'); letter(); }
 
+void leftcur(){ push(getc(stdin)); }
+
 void pipe()
 {
 	if(cdrop()!=cif) panic("control mismatch");
-	while(nextc()!=']');
+	skipc('[', ']');
 }
 
-/* i now realise that a switch statement probably compiles to this */
+void rightcur(){ putchar(drop()); }
+
 void (*symbols[256])()={
 end, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, space, unknown, unknown, unknown, unknown, unknown,
@@ -249,7 +244,7 @@ letter, letter, letter, leftbr, unknown, rightbr, caret, underscore,
 unknown, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
 lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
 lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
-lowercase, lowercase, lowercase, unknown, pipe, unknown, unknown, unknown,
+lowercase, lowercase, lowercase, leftcur, pipe, rightcur, unknown, unknown,
 
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
