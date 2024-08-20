@@ -2,31 +2,28 @@
 #include <stdio.h>
 
 typedef int num;
-/* typedef unsigned int unum;    do i need it? */
 
-/* to do: dynamic program storage */
 #define prlen 0x1000
 char pr[prlen];
 num pra;
 char thisc;
 
-#define dslen 32
-/* #define dspad */
+#define dslen 16
 num ds[dslen];
 num dsp;
 
 #define cslen 16
-/* #define cspad */
 num cs[cslen];
 num csp;
 
 #define stlen 0x10000
+#define stpad 16
 num st[stlen];
 num stp, stlink;
 
 enum { cif = -1, cloop = -2 };
 
-void panic(const char m[]) /* to do: deallocation */
+void panic(const char m[])
 {
 	fflush(stdout);
 	fprintf(stderr, "%s at character no. %d \"%c\" (ascii %d)\n", m, pra, thisc, thisc);
@@ -57,6 +54,31 @@ num cdrop()
 {
 	if(csp==0) panic("control underflow");
 	return cs[--csp];
+}
+
+void allot(num n)
+{
+	if(stp>stlen-stpad) panic("out of memory");
+	st[stp++] = n;
+}
+
+num define(num name, num value)
+{
+	allot(name);
+	allot(stlink); stlink = stp-2;
+	allot(value);
+	return stp-1;
+}
+
+num find(num name)
+{
+	num link = stlink;
+	while(link)
+	{
+		if(st[link]==name) break;
+		link = st[link+1];
+	}
+	return link;
 }
 
 char nextc()
@@ -98,7 +120,12 @@ void quote(){
 
 void hash(){ push(0); }
 
-void dollar(){ /* to do */ }
+void dollar(){
+	num link = find(drop());
+	if(link==0) panic("macro not found");
+	cpush(pra);
+	pra = st[link+2];
+}
 
 void percent(){ num x = drop(); num y = drop(); push(x); push(y); }
 
@@ -124,7 +151,7 @@ void astesrisk(){ push(drop()*drop()); }
 
 void plus(){ push(drop()+drop()); }
 
-void comma(){ /* to do */ }
+void comma(){ allot(drop()); }
 
 void minus(){ num x = drop(); push(drop()-x); }
 
@@ -136,17 +163,26 @@ void digit(){ push(drop()*10 + thisc-'0'); }
 
 void colon(){ num x =  drop(); push(x); push(x); }
 
-void semicolon(){ /* to do */ }
+void semicolon(){ pra = cdrop(); }
 
 void less(){ push(drop()<0 ? -1 : 0); }
 
-void equals(){ /* to do */ }
+void equals(){ st[drop()] = drop(); }
 
-void greater(){ /* to do */ }
+void greater()
+{
+	num name = drop();
+	num link = find(name);
+	if(link) push(link+2); else push(define(name, 0));
+}
 
 void question(){ num x; scanf("%u", &x); push(x); }
 
-void arrobe(){ /* to do */ }
+void arrobe()
+{
+	define(drop(), pra);
+	while(nextc()!=';');
+}
 
 void letter(){ push(drop()*26 + thisc-'A'); }
 
@@ -174,6 +210,8 @@ void leftbr()
 	}
 }
 
+void rightbr(){ if(cdrop()!=cif) panic("control mismatch"); }
+
 void caret()
 {
 	if(drop()==0)
@@ -183,7 +221,7 @@ void caret()
 	}
 }
 
-void rightbr(){ if(cdrop()!=cif) panic("control mismatch"); }
+void underscore(){ push(st[drop()]); }
 
 void lowercase(){ thisc = thisc + ('A'-'a'); letter(); }
 
@@ -193,20 +231,21 @@ void pipe()
 	while(nextc()!=']');
 }
 
+/* i now realise that a switch statement probably compiles to this */
 void (*symbols[256])()={
 end, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, space, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
 
-space, exclamation, quote, hash, unknown, percent, unknown, apostrophe,
+space, exclamation, quote, hash, dollar, percent, unknown, apostrophe,
 leftpar, rightpar, astesrisk, plus, unknown, minus, dot, slash,
 digit, digit, digit, digit, digit, digit, digit, digit,
-digit, digit, colon, unknown, less, unknown, unknown, question,
-unknown, letter, letter, letter, letter, letter, letter, letter,
+digit, digit, colon, semicolon, less, equals, greater, question,
+arrobe, letter, letter, letter, letter, letter, letter, letter,
 letter, letter, letter, letter, letter, letter, letter, letter,
 letter, letter, letter, letter, letter, letter, letter, letter,
-letter, letter, letter, leftbr, unknown, rightbr, caret, unknown,
+letter, letter, letter, leftbr, unknown, rightbr, caret, underscore,
 unknown, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
 lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
 lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
@@ -245,6 +284,7 @@ int main(int argc, char **argv)
 	}
 	pr[fread(pr, 1, prlen, f)] = 0;
 	fclose(f);
+	
 	/* interpret */
 	stlink = 0, stp = 1;
 	pra = 0;
