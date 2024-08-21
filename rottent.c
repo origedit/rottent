@@ -16,7 +16,7 @@ num dsp;
 #define cslen 32
 struct csx{
 	enum{ cif = -1, cloop = -2, cmacro = -3 }type;
-	num x;
+	num pos;
 };
 struct csx cs[cslen];
 num csp;
@@ -107,179 +107,6 @@ void skipc(char left, char right)
 	while(level);
 }
 
-/* symbols */
-
-void end(){
-	if(csp!=0) panic("unexpected end of program");
-	exit(0);
-}
-
-void unknown(){ panic("unknown symbol"); }
-
-void space(){}
-
-void exclamation(){ printf("%d", drop()); }
-
-void quote(){
-	char c;
-	while((c = nextc())!='"') putchar(c);
-}
-
-void hash(){ push(0); }
-
-void dollar(){
-	num link = find(drop());
-	if(link==0) panic("macro not found");
-	cpush(cmacro, pra);
-	pra = st[link+2];
-}
-
-void percent(){ num x = drop(), y = drop(); push(x); push(y); }
-
-void apostrophe(){ while(nextc()!='\n'); }
-
-void leftpar(){ cpush(cloop, pra); }
-
-void rightpar()
-{
-	if(cfetch().type!=cloop) panic("bad loop");
-	pra = cfetch().x;
-}
-
-void astesrisk(){ push(drop()*drop()); }
-
-void plus(){ push(drop()+drop()); }
-
-void comma(){ allot(drop()); }
-
-void minus(){ num x = drop(); push(drop()-x); }
-
-void dot(){ drop(); }
-
-void slash()
-{
-	num x = drop();
-	if(x==0) panic("division by zero");
-	push(drop()/x);
-}
-
-void digit(){ push(drop()*10 + thisc-'0'); }
-
-void colon(){ num x =  drop(); push(x); push(x); }
-
-void semicolon(){
-	struct csx c = cdrop();
-	if(c.type!=cmacro) panic("bad macro");
-	pra = c.x;
-}
-
-void less(){ push(drop()<0); }
-
-void equals(){ st[drop()] = drop(); }
-
-void greater()
-{
-	num name = drop();
-	num link = find(name);
-	if(link) push(link+2); else push(define(name, 0));
-}
-
-void question(){ num x; scanf("%u", &x); push(x); }
-
-void arrobe()
-{
-	define(drop(), pra);
-	while(nextc()!=';');
-}
-
-void letter(){ push(drop()*26 + thisc-'A'); }
-
-void leftbr()
-{
-	if(drop())
-	{
-		cpush(cif, 0);
-	}
-	else
-	{
-		int level = 1;
-		char c;
-		do
-		{
-			c=nextc();
-			if(level==1 && c=='|')
-			{
-				cpush(cif, 0);
-				break;
-			}
-			if(c=='[') ++level; else if(c==']') --level;
-		}
-		while(level);
-	}
-}
-
-void rightbr(){ if(cdrop().type!=cif) panic("bad branch"); }
-
-void caret()
-{
-	if(drop()==0)
-	{
-		if(cdrop().type!=cloop) panic("bad loop");
-		skipc('(', ')');
-	}
-}
-
-void underscore(){ push(st[drop()]); }
-
-void lowercase(){ thisc = thisc + ('A'-'a'); letter(); }
-
-void leftcur(){ push(getc(stdin)); }
-
-void pipe()
-{
-	if(cdrop().type!=cif) panic("bad branch");
-	skipc('[', ']');
-}
-
-void rightcur(){ putchar(drop()); }
-
-void (*symbols[256])()={
-end, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, space, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-
-space, exclamation, quote, hash, dollar, percent, unknown, apostrophe,
-leftpar, rightpar, astesrisk, plus, unknown, minus, dot, slash,
-digit, digit, digit, digit, digit, digit, digit, digit,
-digit, digit, colon, semicolon, less, equals, greater, question,
-arrobe, letter, letter, letter, letter, letter, letter, letter,
-letter, letter, letter, letter, letter, letter, letter, letter,
-letter, letter, letter, letter, letter, letter, letter, letter,
-letter, letter, letter, leftbr, unknown, rightbr, caret, underscore,
-unknown, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
-lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
-lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase, lowercase,
-lowercase, lowercase, lowercase, leftcur, pipe, rightcur, unknown, unknown,
-
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown,
-unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown
-};
-
 int main(int argc, char **argv)
 {
 	if (argc<2)
@@ -299,6 +126,107 @@ int main(int argc, char **argv)
 	/* interpret */
 	stlink = 0, stp = 1;
 	pra = 0;
-	for(;;) symbols[(signed char)(thisc = pr[pra++])]();
+	for(;;) switch(thisc = pr[pra++]){
+	case '\0':
+		if(csp!=0) panic("unexpected end of program");
+		exit(0);
+		break;
+	case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+	case 8: case 9: case 10: case 11: case 12: case 13: case 14: case 15: 
+	case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
+	case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
+	case 32: break;
+	case '!': printf("%d", drop()); break;
+	case '"':{
+		char c;
+		while((c = nextc())!='"') putchar(c);
+	}break;
+	case '#': push(0); break;
+	case '$':{
+		num link = find(drop());
+		if(link==0) panic("macro not found");
+		cpush(cmacro, pra);
+		pra = st[link+2];
+	}break;
+	case '%':{ num x = drop(), y = drop(); push(x); push(y); }break;
+	case '\'': while(nextc()!='\n'); break;
+	case '(': cpush(cloop, pra); break;
+	case ')':
+		if(cfetch().type!=cloop) panic("bad loop");
+		pra = cfetch().pos;
+		break;
+	case '*': push(drop()*drop()); break;
+	case '+': push(drop()+drop()); break;
+	case ',': allot(drop()); break;
+	case '-':{ num x = drop(); push(drop()-x); }break;
+	case '.': drop(); break;
+	case '/':{
+		num x = drop();
+		if(x==0) panic("division by zero");
+		push(drop()/x);
+	}break;
+	case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+		push(drop()*10 + thisc-'0'); break;
+	case ':':{ num x =  drop(); push(x); push(x); }break;
+	case ';':{
+		struct csx c = cdrop();
+		if(c.type!=cmacro) panic("bad macro");
+		pra = c.pos;
+	}break;
+	case '<': push(drop()<0); break;
+	case '=': st[drop()] = drop(); break;
+	case '>':{
+		num name = drop();
+		num link = find(name);
+		if(link) push(link+2); else push(define(name, 0));
+	}break;
+	case '?':{ num x; scanf("%u", &x); push(x); }break;
+	case '@': define(drop(), pra); while(nextc()!=';'); break;
+	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H':
+	case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
+	case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+	case 'Y': case 'Z':
+		push(drop()*26 + thisc-'A'); break;
+	case '[':
+		if(drop()) cpush(cif, 0);
+		else
+		{
+			int level = 1;
+			char c;
+			do
+			{
+				c=nextc();
+				if(level==1 && c=='|')
+				{
+					cpush(cif, 0);
+					break;
+				}
+				if(c=='[') ++level; else if(c==']') --level;
+			}
+			while(level);
+		}
+		break;
+	case ']': if(cdrop().type!=cif) panic("bad branch"); break;
+	case '^':
+		if(drop()==0)
+		{
+			if(cdrop().type!=cloop) panic("bad loop");
+			skipc('(', ')');
+		}
+		break;
+	case '_': push(st[drop()]); break;
+	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
+	case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
+	case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+	case 'y': case 'z':
+		push(drop()*26 + thisc-'a'); break;
+	case '{': push(getc(stdin)); break;
+	case '|':
+		if(cdrop().type!=cif) panic("bad branch");
+		skipc('[', ']');
+		break;
+	case '}': putchar(drop()); break;
+	default: panic("unknown symbol");
+	}
 	return 0; /* this part is not reached */
 }

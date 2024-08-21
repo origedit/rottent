@@ -1,3 +1,12 @@
+to do:
+- good char input
+- example programs
+- find out what exit() does
+- why is the executable so big??
+- look into portable linux execuables
+- examples
+
+
 # Rottent
 
 a small interpreted programming language based on Mouse.
@@ -5,11 +14,6 @@ a small interpreted programming language based on Mouse.
 a program in rottent consists of ascii characters which separately perform small actions. unlike mouse, the language uses a hack to support variables with long names.
 
 date of conception - 19.08.2024
-
-to do:
-- good char input
-- find out what exit() does
-- why is the executable so big??
 
 
 ## description
@@ -24,41 +28,39 @@ the interpreter is assumed to have a control stack for handling control structur
 
 variables and macros are stored in the virtual memory, referred to as the storage. it consists of numbers which can be indexed.
 
-the program text and the storage may be stored in one memory region, if that makes implementation easier.
-
 
 ## commands
 
-- : (x -- x x) duplicate
-- . (x -- ) remove
-- % (x y -- y x) swap
-- > (name -- address) reference
-- , (x -- ) append a number
-- _ (address -- value) fetch a number
-- = (value address -- ) deposit a number
-- @ (name -- ) define a macro
-- ; ( -- ) end a macro
-- $ (name -- ) execute a macro
-- { ( -- x) read a character
-- } (x -- ) write a character
-- ? ( -- x) read a number
-- ! (x -- ) write a number
-- + (x y -- x+y)
-- - (x y -- x-y)
-- * (x y -- x*y)
-- / (x y -- x/y)
-- [ (flag -- ) skip to `|` or `]` if the flag is false
-- | ( -- ) the false part of a branch
-- ] ( -- ) end if
-- < (x -- flag) check for negative
-- # ( -- ) push zero
+- `:` (x -- x x) duplicate
+- `.` (x -- ) remove
+- `%` (x y -- y x) swap
+- `>` (name -- address) reference
+- `,` (x -- ) append
+- `_` (address -- value) fetch a number
+- `=` (value address -- ) deposit a number
+- `@` (name -- ) define a macro
+- `;` ( -- ) end a macro
+- `$` (name -- ) execute a macro
+- `{` ( -- x) read a character
+- `}` (x -- ) write a character
+- `?` ( -- x) read a number
+- `!` (x -- ) write a number
+- `+` (x y -- x+y)
+- `-` (x y -- x-y)
+- `*` (x y -- x*y)
+- `/` (x y -- x/y)
+- `[` (flag -- ) skip to `|` or `]` if the flag is false
+- `|` ( -- ) the false part of a branch
+- `]` ( -- ) end if
+- `<` (x -- flag) check for negative
+- `#` ( -- 0) push zero
 - 0...9 (x -- x*10+digit) multiply by 10 and add the digit
 - a...z (x -- x*26+letter) multiply by 26 and add the index of the letter
-- ( ( -- ) begin a loop
-- ^ (flag -- ) continue the loop if given true
-- ) ( -- ) repeat the loop
-- ' ( -- ) skip a comment line
-- " ( -- ) write a string that ends with "
+- `(` ( -- ) begin a loop
+- `^` (flag -- ) continue the loop if given true
+- `)` ( -- ) repeat the loop
+- `'` ( -- ) skip a comment line
+- `"` ( -- ) write a string that ends with "
 
 
 ## literals
@@ -66,7 +68,7 @@ the program text and the storage may be stored in one memory region, if that mak
 a number starts with `#`. `#` itself evaluates to zero.
 
 ```
-#123! ' prints "123 "
+#123! ' prints "123"
 ```
 
 
@@ -78,7 +80,7 @@ variable names are numbers in base 26. the number might overflow and the interpr
 #Ba! ' prints 26
 ```
 
-the s `>` finds the address of the variable referenced with the given name. if the variable is not found, it gets created.
+the symbol `>` finds the address of the variable referenced with the given name. if the variable is not found, it gets created.
 
 ```
 #444 #OwO>= ' OWO=444
@@ -112,7 +114,7 @@ macros are invoked with $.
 variables and macros can't share names.
 
 
-## dictionary
+## storage
 
 a definition looks like this
 - name: number
@@ -145,10 +147,10 @@ a loop can be infinite
 #1 ( :! ", " #1+ ) ' prints "1, 2, 3,"...
 ```
 
-or conditional. `^` ends the loop if it receives false.
+or conditional. `^` ends the loop if it receives zero.
 
 ```
-#10 ( :! #1- :^ ", " ) . "." ' prints "10, 9, 8,"...
+#10 ( :! #1- :^ ", " ). "." ' prints "10, 9, 8,"...
 ```
 
 a number is considered true if it's not zero.
@@ -159,7 +161,7 @@ a number is considered true if it's not zero.
 the interpreter might abort execution in the following cases
 - an invalid character gets interpreted
 - the data stack is in an invalid state
-- structure mismatch
+- control structure mismatch, including at the end of the program
 - dictionary gets full
 - division by zero
 
@@ -170,17 +172,19 @@ mouse doesn't shuflle stacks. the stack is simply an aid in transferring data. t
 
 mouse chose to handle variables so primitively that it hurts their use and clarity. i tried to make variables with long names work. the storage is a linked list because it allows to have arrays that are bigger than 26 numbers. it's a jump in complexity.
 
-mouse handles macros like functions in algol-likes. i'm not sure how this feature is implemented, but it seems too complex to stay.
+macros in mouse require a variable amount of parameters separate from the data stack. i'm not sure how this feature is implemented, but it seems too complex to stay.
 
 the branch statement in mouse doesn't have a false part. as it turns out, its implementation is complicated.
 
-reading programs written for mouse, for a long time i thought that `!` in text literals was a writing style and not a marker of newlines. in rottent you can write newlines either directly in  the text or as `#10}`.
+reading programs written for mouse, for a long time i thought that `!` in text literals was a writing style and not a marker for newlines. in rottent you can write newlines either directly in the text or as `#10}`.
 
-mouse didn't feel need for single character input and output. i added this feature in hope to make the language usable. without direct access to files, this decision seems naive.
+mouse didn't feel need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive.
 
-rottent has way more primitives than mouse. it could use less. rottent seems more complicated than mouse, while being just as weird to program, if not more.
+compared to rottent, mouse has a complicated interpreter, requiring looking up the next character as well as needing a separate stack for macros.
 
-the working interpreter is about 300 lines of c (to do: count with cloc).
+rottent has way more primitives than mouse. it could use less.
 
-i'm unaware of why mouse is the way it is, mainly because the book on it is unobainable. i designed rottent to see what mouse would be like if you were able to get things done with it. in result i brang it closer to forth. indeed, if you need to get things done, just use forth.
+the working interpreter written in c fits in less than 300 lines of code.
+
+i'm unaware of why mouse is the way it is, mainly because the book on it is unobtainable. i designed rottent to see what mouse would be like if you were able to get things done with it. in result i brang it closer to forth. indeed, if you need to get things done, just use forth.
 
