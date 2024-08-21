@@ -1,10 +1,5 @@
 to do:
-- good char input
-- example programs
-- find out what exit() does
-- why is the executable so big??
-- look into portable linux execuables
-- examples
+- more example programs
 
 
 # Rottent
@@ -68,7 +63,13 @@ variables and macros are stored in the virtual memory, referred to as the storag
 a number starts with `#`. `#` itself evaluates to zero.
 
 ```
-#123! ' prints "123"
+#123!   ' prints "123"
+```
+
+use this hack for negaive numbers.
+
+```
+##123-!   ' prints "-123"
 ```
 
 
@@ -77,21 +78,21 @@ a number starts with `#`. `#` itself evaluates to zero.
 variable names are numbers in base 26. the number might overflow and the interpreter won't tell you about it. names are not case sensitive.
 
 ```
-#Ba! ' prints 26
+#Ba!   ' prints 26
 ```
 
 the symbol `>` finds the address of the variable referenced with the given name. if the variable is not found, it gets created.
 
 ```
-#444 #OwO>= ' OWO=444
-#123 #OwO>_ +! ' prints the sum of 123 and OWO
+#444 #OwO>=   ' OWO=444
+#123 #OwO>_ +!   ' prints the sum of 123 and OWO
 ```
 
 the command `,` appends a number to the most recent definition. it's used to make arrays.
 
 ```
 #Array>. #1, #2, #3,
-#Array> #1+:_!" " #1+:_!" " #1+_! ' prints "1 2 3"
+#Array> #1+:_!" " #1+:_!" " #1+_!   ' prints "1 2 3"
 ```
 
 
@@ -99,16 +100,18 @@ the command `,` appends a number to the most recent definition. it's used to mak
 
 a macro has to be defined before use.
 
-the definition of a macro begins with `@` and ends with `;`. it takes a name for the macro from the stack. a macro is expected to have only one exit point.
+the definition of a macro begins with `@` and ends with `;`. it takes a name for the macro from the stack. a macro has one exit point.
 
 ```
 #HI@ "hell"#!" world" ;
+#minus@ #%- ;
 ```
 
 macros are invoked with $.
 
 ```
-#HI$ ' prints "hell0 world"
+#HI$   ' prints "hell0 world"
+#123 #minus$   ' a clearer alternative to "##123-"
 ```
 
 variables and macros can't share names.
@@ -126,7 +129,7 @@ for ease of implementation, definitions don't start at cell 0.
 you may hide a definition like this
 
 ```
-#0 #VAR> #1-= ' the name field of VAR is now 0
+#0 #VAR> #1-=   ' the name field of VAR is now 0
 ```
 
 next time the name VAR is referenced, the previous definition won't be found, and a new one will be created.
@@ -144,13 +147,13 @@ decisions are done like this
 a loop can be infinite
 
 ```
-#1 ( :! ", " #1+ ) ' prints "1, 2, 3,"...
+#1 ( :! ", " #1+ )   ' prints "1, 2, 3,"...
 ```
 
 or conditional. `^` ends the loop if it receives zero.
 
 ```
-#10 ( :! #1- :^ ", " ). "." ' prints "10, 9, 8,"...
+#10 ( :! #1- :^ ", " ). "."   ' prints "10, 9, 8,"...
 ```
 
 a number is considered true if it's not zero.
@@ -166,25 +169,23 @@ the interpreter might abort execution in the following cases
 - division by zero
 
 
-## rationale
+## notes
 
-mouse doesn't shuflle stacks. the stack is simply an aid in transferring data. the programmer isn't meant to think about the stack. it's a neat idea. i wonder how it would work with registers. i put the stack commands anyway because they're handy.
+mouse doesn't shuffle stacks. the stack is simply an aid in transferring data. the programmer isn't meant to think about the stack. it's a neat idea. i wonder how it would work with registers. i put the stack commands anyway because they're handy.
+
+compared to rottent, mouse has a complicated interpreter, requiring looking up the next character as well as needing a separate stack for macros.
+
+rottent has way more primitives than mouse. it could use less. still, the working interpreter written in c fits in less than 300 lines of code.
 
 mouse chose to handle variables so primitively that it hurts their use and clarity. i tried to make variables with long names work. the storage is a linked list because it allows to have arrays that are bigger than 26 numbers. it's a jump in complexity.
 
 macros in mouse require a variable amount of parameters separate from the data stack. i'm not sure how this feature is implemented, but it seems too complex to stay.
 
-the branch statement in mouse doesn't have a false part. as it turns out, its implementation is complicated.
+the branch statement in mouse doesn't have a false part. as it turns out, its implementation is unintuitive.
 
 reading programs written for mouse, for a long time i thought that `!` in text literals was a writing style and not a marker for newlines. in rottent you can write newlines either directly in the text or as `#10}`.
 
-mouse didn't feel need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive.
-
-compared to rottent, mouse has a complicated interpreter, requiring looking up the next character as well as needing a separate stack for macros.
-
-rottent has way more primitives than mouse. it could use less.
-
-the working interpreter written in c fits in less than 300 lines of code.
+mouse didn't feel need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive. input is realised with `getc()`
 
 i'm unaware of why mouse is the way it is, mainly because the book on it is unobtainable. i designed rottent to see what mouse would be like if you were able to get things done with it. in result i brang it closer to forth. indeed, if you need to get things done, just use forth.
 

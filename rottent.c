@@ -35,13 +35,13 @@ void panic(const char m[])
 
 void push(num n)
 {
-	if(dsp==dslen) panic("overflow");
+	if(dsp==dslen) panic("too many numbers");
 	ds[dsp++] = n;
 }
 
 num drop()
 {
-	if(dsp==0) panic("underflow");
+	if(dsp==0) panic("no numbers left");
 	return ds[--dsp];
 }
 
@@ -80,18 +80,14 @@ num define(num name, num value)
 num find(num name)
 {
 	num link = stlink;
-	while(link)
-	{
-		if(st[link]==name) break;
-		link = st[link+1];
-	}
+	while(link && st[link]!=name) link = st[link+1];
 	return link;
 }
 
 char nextc()
 {
 	char c = pr[pra++];
-	if(c==0) panic("unexpected end of program");
+	if(c==0) panic("unexpected end of the program");
 	return c;
 }
 
@@ -100,24 +96,21 @@ void skipc(char left, char right)
 	int level = 1;
 	char c;
 	do
-	{
-		c = nextc();
-		if(c==left) ++level; else if(c==right) --level;
-	}
+		if((c = nextc())==left) ++level; else if(c==right) --level;
 	while(level);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
 	if (argc<2)
 	{
-		fputs("provide the source file\n", stderr);
+		fputs("provide the program file\n", stderr);
 		return 1;
 	}
 	FILE *f = fopen(argv[1], "rb");
 	if(f==NULL)
 	{
-		fputs("source file not found\n", stderr);
+		fprintf(stderr, "can't open the program file \"%s\"\n", argv[1]);
 		return 1;
 	}
 	pr[fread(pr, 1, prlen, f)] = 0;
@@ -188,8 +181,7 @@ int main(int argc, char **argv)
 	case 'Y': case 'Z':
 		push(drop()*26 + thisc-'A'); break;
 	case '[':
-		if(drop()) cpush(cif, 0);
-		else
+		if(drop()) cpush(cif, 0);else
 		{
 			int level = 1;
 			char c;
@@ -220,7 +212,10 @@ int main(int argc, char **argv)
 	case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x':
 	case 'y': case 'z':
 		push(drop()*26 + thisc-'a'); break;
-	case '{': push(getc(stdin)); break;
+	case '{':{
+		int c = getc(stdin);
+		push(c==EOF ? 0 : c);
+	}break;
 	case '|':
 		if(cdrop().type!=cif) panic("bad branch");
 		skipc('[', ']');
