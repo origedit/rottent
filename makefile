@@ -1,6 +1,9 @@
 test: rottent
 	./rottent examples/test.rtn
 
+clean:
+	rm rottent
+
 rottent: rottent.c
 	cc -std=c90 -Wall -o $@ rottent.c
 

@@ -1,21 +1,32 @@
 to do:
-- more example programs
+- comparison examples
+- logo
+- greeting in test.rtn
 
 
 # Rottent
 
-a small interpreted programming language based on Mouse.
+a minimal interpreted programming language based on Mouse.
 
 a program in rottent consists of ascii characters which separately perform small actions. unlike mouse, the language uses a hack to support variables with long names.
 
 date of conception - 19.08.2024
 
+## usage
 
-## description
+run `make` in the project's directory, or just compile `rottent.c` yourself.
+
+run programs like this
+
+```sh
+rottent your-program.rtn
+```
+
+## interpreter
 
 lowercase letters are interpreted as uppercase letters. note that this doesn't apply to words like `"`, since they handle their letters instead of the interpreter.
 
-the only data type is numbers. whether they're integer or real, 16 bit or 32 bit, is decided by the implementation.
+the only data type is signed integer numbers. their bit-width is decided by the implementation.
 
 the data stack stores temporary numbers.
 
@@ -47,7 +58,7 @@ variables and macros are stored in the virtual memory, referred to as the storag
 - `[` (flag -- ) skip to `|` or `]` if the flag is false
 - `|` ( -- ) the false part of a branch
 - `]` ( -- ) end if
-- `<` (x -- flag) check for negative
+- `<` (x -- flag) push 1 if x is negative, otherwise 0
 - `#` ( -- 0) push zero
 - 0...9 (x -- x*10+digit) multiply by 10 and add the digit
 - a...z (x -- x*26+letter) multiply by 26 and add the index of the letter
@@ -81,7 +92,7 @@ variable names are numbers in base 26. the number might overflow and the interpr
 #Ba!   ' prints 26
 ```
 
-the symbol `>` finds the address of the variable referenced with the given name. if the variable is not found, it gets created.
+the symbol `>` finds the address of the variable referenced with the given name. if the variable is not found, it gets created and it will be assigned zero.
 
 ```
 #444 #OwO>=   ' OWO=444
@@ -167,6 +178,7 @@ the interpreter might abort execution in the following cases
 - control structure mismatch, including at the end of the program
 - dictionary gets full
 - division by zero
+- an undefined macro is invoked
 
 
 ## notes
@@ -177,15 +189,15 @@ compared to rottent, mouse has a complicated interpreter, requiring looking up t
 
 rottent has way more primitives than mouse. it could use less. still, the working interpreter written in c fits in less than 300 lines of code.
 
-mouse chose to handle variables so primitively that it hurts their use and clarity. i tried to make variables with long names work. the storage is a linked list because it allows to have arrays that are bigger than 26 numbers. it's a jump in complexity.
+mouse chose to handle variables so primitively that it hurts their use and clarity. i tried to make variables with long names work. the storage is a linked list because it allows to have arrays that are bigger than 26 numbers. it's a jump in complexity. in mouse it takes one character to use a variable, in rottent - 3.
 
-macros in mouse require a variable amount of parameters separate from the data stack. i'm not sure how this feature is implemented, but it seems too complex to stay.
+macros are simpler than in mouse and so they suffer from the lack of local variables.
 
 the branch statement in mouse doesn't have a false part. as it turns out, its implementation is unintuitive.
 
 reading programs written for mouse, for a long time i thought that `!` in text literals was a writing style and not a marker for newlines. in rottent you can write newlines either directly in the text or as `#10}`.
 
-mouse didn't feel need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive. input is realised with `getc()`
+mouse didn't feel need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive. input is realised with `getc()`, though `getch()` is desirable.
 
-i'm unaware of why mouse is the way it is, mainly because the book on it is unobtainable. i designed rottent to see what mouse would be like if you were able to get things done with it. in result i brang it closer to forth. indeed, if you need to get things done, just use forth.
+i'm unaware of why mouse is the way it is. i designed rottent to see what mouse would be like if you were able to get things done with it. in result i brang it closer to forth. indeed, if you need to get things done, just use forth.
 

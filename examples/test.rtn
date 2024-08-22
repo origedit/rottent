@@ -1,7 +1,8 @@
-#CR@ #10} ;
+#PUT A SILLY TEXT HERE
+#SEED>=
 
-"bubble sort"#CR$
-"please just make a bubble sort example"#CR$
+#RANDOM@ #SEED>_: :#ANOTHER ONE*%#4/+ #SEED>= ;
 
-##/
+#MOD@ &&&&&&&&&&&&&&&&&& ;
 
+( #RANDOM$

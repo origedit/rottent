@@ -15,7 +15,7 @@ num dsp;
 
 #define cslen 32
 struct csx{
-	enum{ cif = -1, cloop = -2, cmacro = -3 }type;
+	enum{ cbranch = -1, cloop = -2, cmacro = -3 }type;
 	num pos;
 };
 struct csx cs[cslen];
@@ -119,9 +119,17 @@ int main(int argc, char *argv[])
 	/* interpret */
 	stlink = 0, stp = 1;
 	pra = 0;
-	for(;;) switch(thisc = pr[pra++]){
+	for(;;) switch(thisc = pr[pra++])
+	{
 	case '\0':
-		if(csp!=0) panic("unexpected end of program");
+		if(csp!=0) switch(cdrop().type)
+		{
+		case cbranch: panic("unfinished branch");
+		case cloop: panic("unfinished loop");
+		case cmacro: panic("unfinished macro");
+		default: panic("broken control");
+		}
+		if(dsp>0) fprintf(stderr, "left %d numbers", dsp);
 		exit(0);
 		break;
 	case 1: case 2: case 3: case 4: case 5: case 6: case 7:
@@ -181,7 +189,7 @@ int main(int argc, char *argv[])
 	case 'Y': case 'Z':
 		push(drop()*26 + thisc-'A'); break;
 	case '[':
-		if(drop()) cpush(cif, 0);else
+		if(drop()) cpush(cbranch, 0);else
 		{
 			int level = 1;
 			char c;
@@ -190,7 +198,7 @@ int main(int argc, char *argv[])
 				c=nextc();
 				if(level==1 && c=='|')
 				{
-					cpush(cif, 0);
+					cpush(cbranch, 0);
 					break;
 				}
 				if(c=='[') ++level; else if(c==']') --level;
@@ -198,7 +206,7 @@ int main(int argc, char *argv[])
 			while(level);
 		}
 		break;
-	case ']': if(cdrop().type!=cif) panic("bad branch"); break;
+	case ']': if(cdrop().type!=cbranch) panic("bad branch"); break;
 	case '^':
 		if(drop()==0)
 		{
@@ -217,7 +225,7 @@ int main(int argc, char *argv[])
 		push(c==EOF ? 0 : c);
 	}break;
 	case '|':
-		if(cdrop().type!=cif) panic("bad branch");
+		if(cdrop().type!=cbranch) panic("bad branch");
 		skipc('[', ']');
 		break;
 	case '}': putchar(drop()); break;
