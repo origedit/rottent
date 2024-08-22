@@ -63,10 +63,10 @@ variables and macros are stored in the virtual memory, referred to as the storag
 
 ## literals
 
-a number starts with `#`. `#` itself evaluates to zero.
+a number starts with `#`. `#` itself evaluates to zero. spaces don't separate numbers.
 
 ```
-#123!   ' prints "123"
+#12 3!   ' prints "123"
 ```
 
 use this hack for negaive numbers.
@@ -87,15 +87,15 @@ variable names are numbers. the number might overflow and the interpreter won't 
 the symbol `>` receives a name and finds the address of the corresponding variable. if the variable is not found, it gets created and it will be assigned zero.
 
 ```
-#444 #0w0>=   ' 0w0=444
-#123 #0w0>_ +!   ' prints the sum of 123 and 0w0
+#444 #UwU>=   ' UwU=444
+#123 #UwU>_ +!   ' prints the sum of 123 and UwU
 ```
 
 the command `,` appends a number to the most recent definition. it's used to make arrays.
 
 ```
-#Array>. #1, #2, #3,
-#Array> #1+:_!" " #1+:_!" " #1+_!   ' prints "1 2 3"
+#my array>. #1, #2, #3,
+#my array> #1+:_!" " #1+:_!" " #1+_!   ' prints "1 2 3"
 ```
 
 

@@ -1,0 +1,7 @@
+#min@ '(a b -- min(a, b))
+#min1>= #min2>=
+#min #min1>_ #min2>_ -<[1 | 2] >_ ;
+
+"enter two numbers "??
+"the lesser number is "#min$ !"
+"
