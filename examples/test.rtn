@@ -1,15 +1,7 @@
-"hiii if you see this message, that means the interpreter is running correctly.
+"if you see this text, your interpreter is working!
 
-i haven't finished some stuff so here, take an error
-" ##/
+run your programs like this
 
-ignore this
+./rottent your-program.rtn
 
-#PUT A SILLY TEXT HERE
-#SEED>=
-
-#RANDOM@ #SEED>_: :#ANOTHER ONE*%#4/+ #SEED>= ;
-
-#MOD@ &&&&&&&&&&&&&&&&&& ;
-
-( #RANDOM$
+"

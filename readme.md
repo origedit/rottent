@@ -1,12 +1,6 @@
-to do:
-- comparison examples
-- logo
-- greeting in test.rtn
-
-
 # Rottent
 
-a minimal interpreted programming language based on Mouse.
+a minimal interpreted programming language based on Mouse, language by Peter Grogono.
 
 a program in rottent consists of ascii characters which separately perform small actions. unlike mouse, the language uses a hack to support variables with long names.
 
@@ -23,8 +17,6 @@ rottent your-program.rtn
 ```
 
 ## interpreter
-
-lowercase letters are interpreted as uppercase letters. note that this doesn't apply to words like `"`, since they handle their letters instead of the interpreter.
 
 the only data type is signed integer numbers. their bit-width is decided by the implementation.
 
@@ -59,9 +51,9 @@ variables and macros are stored in the virtual memory, referred to as the storag
 - `|` ( -- ) the false part of a branch
 - `]` ( -- ) end if
 - `<` (x -- flag) push 1 if x is negative, otherwise 0
-- `#` ( -- 0) push zero
-- 0...9 (x -- x*10+digit) multiply by 10 and add the digit
-- a...z (x -- x*26+letter) multiply by 26 and add the index of the letter
+- `#` ( -- 0) start a number
+- 0...9 (x -- x*10+digit) complete a number
+- a...z (x -- x*26+letter) complete a name
 - `(` ( -- ) begin a loop
 - `^` (flag -- ) continue the loop if given true
 - `)` ( -- ) repeat the loop
@@ -86,17 +78,17 @@ use this hack for negaive numbers.
 
 ## variables
 
-variable names are numbers in base 26. the number might overflow and the interpreter won't tell you about it. names are not case sensitive.
+variable names are numbers. the number might overflow and the interpreter won't tell you about it. names are not case sensitive.
 
 ```
 #Ba!   ' prints 26
 ```
 
-the symbol `>` finds the address of the variable referenced with the given name. if the variable is not found, it gets created and it will be assigned zero.
+the symbol `>` receives a name and finds the address of the corresponding variable. if the variable is not found, it gets created and it will be assigned zero.
 
 ```
-#444 #OwO>=   ' OWO=444
-#123 #OwO>_ +!   ' prints the sum of 123 and OWO
+#444 #0w0>=   ' 0w0=444
+#123 #0w0>_ +!   ' prints the sum of 123 and 0w0
 ```
 
 the command `,` appends a number to the most recent definition. it's used to make arrays.
@@ -136,14 +128,6 @@ a definition looks like this
 - data: either cells for a variable, or the address of the macro's definition in the program
 
 for ease of implementation, definitions don't start at cell 0.
-
-you may hide a definition like this
-
-```
-#0 #VAR> #1-=   ' the name field of VAR is now 0
-```
-
-next time the name VAR is referenced, the previous definition won't be found, and a new one will be created.
 
 
 ## control flow
@@ -197,7 +181,7 @@ the branch statement in mouse doesn't have a false part. as it turns out, its im
 
 reading programs written for mouse, for a long time i thought that `!` in text literals was a writing style and not a marker for newlines. in rottent you can write newlines either directly in the text or as `#10}`.
 
-mouse didn't feel need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive. input is realised with `getc()`, though `getch()` is desirable.
+mouse didn't feel the need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive. input is realised with `getc()`, though `getch()` is desirable.
 
 i'm unaware of why mouse is the way it is. i designed rottent to see what mouse would be like if you were able to get things done with it. in result i brang it closer to forth. indeed, if you need to get things done, just use forth.
 
