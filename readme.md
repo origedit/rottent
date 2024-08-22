@@ -1,6 +1,6 @@
 # Rottent
 
-a minimal interpreted programming language based on Mouse, language by Peter Grogono.
+a minimal interpreted programming language based on Mouse, a language by Peter Grogono.
 
 a program in rottent consists of ascii characters which separately perform small actions. unlike mouse, the language uses a hack to support variables with long names.
 
