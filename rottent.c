@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 		cpush(cmacro, pra);
 		pra = st[link+2];
 	}break;
-	case '%':{ num x = drop(), y = drop(); push(x); push(y); }break;
+	case '%':{ num x = drop(); push(x); push(x); }break;
 	case '\'': while(nextc()!='\n'); break;
 	case '(': cpush(cloop, pra); break;
 	case ')':
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 	case '+': push(drop()+drop()); break;
 	case ',': allot(drop()); break;
 	case '-':{ num x = drop(); push(drop()-x); }break;
-	case '.': drop(); break;
+	case '.': push(st[drop()]); break;
 	case '/':{
 		num x = drop();
 		if(x==0) panic("division by zero");
@@ -168,14 +168,13 @@ int main(int argc, char *argv[])
 	}break;
 	case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 		push(drop()*10 + thisc-'0'); break;
-	case ':':{ num x = drop(); push(x); push(x); }break;
+	case ':': st[drop()] = drop(); break;
 	case ';':{
 		struct csx c = cdrop();
 		if(c.type!=cmacro) panic("bad macro");
 		pra = c.pos;
 	}break;
 	case '<': push(drop()<0); break;
-	case '=': st[drop()] = drop(); break;
 	case '>':{
 		num name = drop();
 		num link = find(name);
@@ -187,7 +186,7 @@ int main(int argc, char *argv[])
 	case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
 	case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
-		push(drop()*26 + thisc-'A'); break;
+		push(drop()<<5 + thisc-'A'+1); break;
 	case '[':
 		if(drop()) cpush(cbranch, 0);else
 		{
@@ -214,12 +213,11 @@ int main(int argc, char *argv[])
 			skipc('(', ')');
 		}
 		break;
-	case '_': push(st[drop()]); break;
 	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
 	case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
 	case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x':
 	case 'y': case 'z':
-		push(drop()*26 + thisc-'a'); break;
+		push(drop()<<5 + thisc-'a'+1); break;
 	case '{':{
 		int c = getc(stdin);
 		push(c==EOF ? 0 : c);

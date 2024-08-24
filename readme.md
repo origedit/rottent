@@ -1,3 +1,8 @@
+to do
+- remake the examples here
+- remake the tutorials
+- solve the locals
+
 # Rottent
 
 a minimal interpreted programming language based on Mouse, a language by Peter Grogono.
@@ -29,13 +34,11 @@ variables and macros are stored in the virtual memory, referred to as the storag
 
 ## commands
 
-- `:` (x -- x x) duplicate
-- `.` (x -- ) remove
-- `%` (x y -- y x) swap
+- `%` (x -- x x) duplicate
 - `>` (name -- address) reference
 - `,` (x -- ) append
-- `_` (address -- value) fetch a number
-- `=` (value address -- ) deposit a number
+- `.` (address -- value) fetch a number
+- `:` (value address -- ) deposit a number
 - `@` (name -- ) define a macro
 - `;` ( -- ) end a macro
 - `$` (name -- ) execute a macro
@@ -49,11 +52,11 @@ variables and macros are stored in the virtual memory, referred to as the storag
 - `/` (x y -- x/y)
 - `[` (flag -- ) skip to `|` or `]` if the flag is false
 - `|` ( -- ) the false part of a branch
-- `]` ( -- ) end if
+- `]` ( -- ) end a branch
 - `<` (x -- flag) push 1 if x is negative, otherwise 0
 - `#` ( -- 0) start a number
 - 0...9 (x -- x*10+digit) complete a number
-- a...z (x -- x*26+letter) complete a name
+- a...z (name -- name) complete a name
 - `(` ( -- ) begin a loop
 - `^` (flag -- ) continue the loop if given true
 - `)` ( -- ) repeat the loop
@@ -78,10 +81,10 @@ use this hack for negaive numbers.
 
 ## variables
 
-variable names are numbers. the number might overflow and the interpreter won't tell you about it. names are not case sensitive.
+start describing a variable with `#`. follow with letters or digits to create a key corresponding to your variable - a name.
 
 ```
-#Ba!   ' prints 26
+#Ba!   ' prints the key for "BA"
 ```
 
 the symbol `>` receives a name and finds the address of the corresponding variable. if the variable is not found, it gets created and it will be assigned zero.
@@ -168,6 +171,8 @@ the interpreter might abort execution in the following cases
 ## notes
 
 mouse doesn't shuffle stacks. the stack is simply an aid in transferring data. the programmer isn't meant to think about the stack. it's a neat idea. i wonder how it would work with registers. i put the stack commands anyway because they're handy.
+
+( ^ redo )
 
 compared to rottent, mouse has a complicated interpreter, requiring looking up the next character as well as needing a separate stack for macros.
 
