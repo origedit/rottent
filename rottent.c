@@ -15,8 +15,8 @@ num dsp;
 
 #define cslen 32
 struct csx{
-	enum{ cbranch = -1, cloop = -2, cmacro = -3 }type;
-	num pos;
+	enum{ cbranch = 1, cloop, cmacro }type;
+	num pos, stp, stlink;
 };
 struct csx cs[cslen];
 num csp;
@@ -45,10 +45,10 @@ num drop()
 	return ds[--dsp];
 }
 
-void cpush(int type, num n)
+void cpush(int type, num pos)
 {
 	if(csp==cslen) panic("decisions too deep");
-	cs[csp++] = (struct csx){type, n};
+	cs[csp++] = (struct csx){type, pos, stp, stlink};
 }
 
 struct csx cfetch()
@@ -173,20 +173,23 @@ int main(int argc, char *argv[])
 		struct csx c = cdrop();
 		if(c.type!=cmacro) panic("bad macro");
 		pra = c.pos;
+		stp = c.stp;
+		stlink = c.stlink;
 	}break;
 	case '<': push(drop()<0); break;
-	case '>':{
+	case '=':{
 		num name = drop();
 		num link = find(name);
 		if(link) push(link+2); else push(define(name, 0));
 	}break;
+	case '>': push(drop()>0); break;
 	case '?':{ num x; scanf("%u", &x); push(x); }break;
 	case '@': define(drop(), pra); while(nextc()!=';'); break;
 	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H':
 	case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
 	case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
-		push(drop()<<5 + thisc-'A'+1); break;
+		push((drop()<<5) + thisc-'A'+1); break;
 	case '[':
 		if(drop()) cpush(cbranch, 0);else
 		{
@@ -213,11 +216,12 @@ int main(int argc, char *argv[])
 			skipc('(', ')');
 		}
 		break;
+	case '_':{ num name = drop(); define(name, drop()); }break;
 	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h':
 	case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p':
 	case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x':
 	case 'y': case 'z':
-		push(drop()<<5 + thisc-'a'+1); break;
+		push((drop()<<5) + thisc-'a'+1); break;
 	case '{':{
 		int c = getc(stdin);
 		push(c==EOF ? 0 : c);

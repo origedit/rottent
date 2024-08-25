@@ -1,6 +1,6 @@
-#min@ '(a b -- min(a, b))
-#min1>= #min2>=
-#min #min1>_ #min2>_ -<[1 | 2] >_ ;
+#min@ '(x y -- min(x, y))
+  #minx_ #miny_
+  #min #minx=. #miny=. -<[x | y] =. ;
 
 "enter two numbers "??
 "the lesser number is "#min$ !"

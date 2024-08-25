@@ -1,0 +1,22 @@
+#INC@ :_#1+%= ;
+
+#ADD@ , #A>#INC$ ;
+#A>. #10#ADD$ #24#ADD$ #93#ADD$ ##80-#ADD$ #56#ADD$ ##56-#ADD$ #3#ADD$ #12#ADD$ ##1-#ADD$ #30#ADD$
+
+#SHOW@ "(" #1( :#A>+_! #1+ :#A>_#1+-<^ ", "). ")" ;
+
+"bubble sort
+given the array " #SHOW$ "
+"
+
+#SWAP@ -<[| #I>_#A>+:_%#1+_ #I>_#A>+= #I>_#A>+#1+= ##DONE>= ] ;
+#PASS@ #1#I>= ( #I>_#A>_-<^ #I>_#A>+:_%#1+_ #SWAP$ #I>#INC$ ) ;
+
+##STEP>=
+##DONE>=
+( #1#DONE>_-^ #1#DONE>= #PASS$
+#STEP>#INC$ "step " #STEP>_! ": " #SHOW$ "
+")
+
+"sorted: " #SHOW$ "
+"
