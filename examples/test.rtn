@@ -1,38 +1,5 @@
-#INC@   =#V_ #V=..#1+ #V=.: ;
-oh no!!!!
-#ADD@   , #A#INC$ ;
-##A_   #10#ADD$ #24#ADD$ #93#ADD$ ##80-#ADD$ #56#ADD$ ##56-#ADD$ #3#ADD$ #12#ADD$ ##1-#ADD$ #32#ADD$
-
-#A=#1+.!"
-"
-
-#SHOW@
-  "(" #1#I_(
-    #A=#I=.+.!
-    #I=.#A=.-<^ ", " #I#INC$
-  ) ")" ;
-
-"bubble sort
-given the array " #SHOW$ "
-"
-"
-#SWAP@
-  %#X_ #1+#Y_
-  #X=.. #Y=.. #X=.: #Y=.:
-  ##DONE>= ;
-#PASS@
-  #1#I_ ( #A=.#I=.->^
-  #I=.#A=+ %#1+.#X_ %.#X=. ->[ #SWAP$ | #0: ]
-  #I#INC$ ) ;
-"
-
-#PASS@ ;
-
-##STEP_
-##DONE_
-( #1#DONE=.-^ #1#DONE=: #PASS$
-#STEP#INC$ "step " #STEP=.! ": " #SHOW$ "
-")
-
-"sorted: " #SHOW$ "
+"if you see this text, your interpreter is working!
+run your programs like this
+	./rottent your-program.rtn
+or check out the examples!
 "
