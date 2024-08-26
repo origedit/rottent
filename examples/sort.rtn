@@ -1,20 +1,12 @@
 #INC@   =#V_ #V=..#1+ #V=.: ;
 
-#ADD@   #A#INC$ ;
-##A_   #10,#ADD$ #24,#ADD$ #93,#ADD$ ##80-,#ADD$ #56,#ADD$ ##56-,#ADD$ #3,#ADD$ #12,#ADD$ ##1-,#ADD$ #32,#ADD$
-
-#A=#1+.!"
-"
+#10#A_   #10, #24, #93, ##80-, #56, ##56-, #3, #12, ##1-, #32,
 
 #SHOW@
   "(" #1#I_(
     #A=#I=.+.!
     #I=.#A=.-<^ ", " #I#INC$
   ) ")" ;
-
-"bubble sort
-given the array " #SHOW$ "
-"
 
 #SWAP@
   %#X_ #1+#Y_
@@ -24,6 +16,10 @@ given the array " #SHOW$ "
   #1#I_ ( #A=.#I=.->^
   #I=.#A=+ %#1+.#X_ %.#X=. ->[ #SWAP$ | #0: ]
   #I#INC$ ) ;
+
+"bubble sort
+given the array " #SHOW$ "
+"
 
 ##STEP_
 ##DONE_

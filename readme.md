@@ -25,7 +25,7 @@ numbers to be used are stored in the data stack.
 variables and macros are stored in the virtual memory, referred to as the storage. it consists of numbers which can be indexed.
 
 
-## commands
+## symbols
 
 - `'` ( -- ) skip a comment line
 - `#` ( -- 0) start a number
@@ -89,7 +89,7 @@ the symbol `=` receives a name and finds the address of the corresponding variab
 #123 #UwU=. +!   ' prints the sum of 123 and UwU
 ```
 
-the command `,` appends a number to the most recent definition. it's used to make arrays. the command `_` creates a variable even if it was defined earlier.
+the symbol `,` appends a number to the most recent definition. it's used to make arrays. the symbol `_` creates a variable even if it was defined earlier.
 
 ```
 #my array_   #1, #2, #3,
@@ -148,7 +148,7 @@ a loop can be infinite
 or conditional. `^` ends the loop if it receives zero.
 
 ```
-#10 ( %! #1- %^ ", " )#0: "."   ' prints "10, 9, 8,"...
+#10 ( %! #1- %^ ", " )#0: "."   ' prints "10, 9, 8, 7, 6, 5, 4, 3, 2, 1."
 ```
 
 make sure that after a loop the stack doesn't have the loop's counter. you can safely remove it by sending it to cell 0.
@@ -169,7 +169,7 @@ the interpreter might abort execution in the following cases
 
 rottent is inspired by Mouse, a language by Peter Grogono, and so is compared to it in this section.
 
-mouse doesn't shuffle stacks. i added stack operators for convenience, but in result the code became messy.
+mouse doesn't shuffle stacks. at first i added stack operators for convenience, but in result the code became messy.
 
 compared to rottent, mouse has a complicated interpreter, requiring looking up the next character as well as needing a separate stack for macros.
 

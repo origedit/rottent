@@ -80,7 +80,7 @@ num define(num name, num value)
 num find(num name)
 {
 	num link = stlink;
-	while(link && link<stlen && st[link]!=name) link = st[link+1];
+	while(link && (unsigned)link<stlen && st[link]!=name) link = st[link+1];
 	return link;
 }
 
