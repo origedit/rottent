@@ -1,8 +1,3 @@
-to do
-- remake the examples here
-- remake the tutorials
-- solve the locals
-
 # Rottent
 
 a minimal interpreted programming language.
@@ -180,9 +175,9 @@ compared to rottent, mouse has a complicated interpreter, requiring looking up t
 
 rottent has way more primitives than mouse. still, the working interpreter written in c fits in less than 300 lines of code.
 
-mouse chose to handle variables so primitively that it hurts their use and clarity. i tried to make variables with long names work. the storage is a linked list because it allows to have arrays that are bigger than 26 numbers. it's a jump in complexity. in mouse it takes one character to use a variable, in rottent - 3.
+the way local variables are implemented means that you can't allocate data in a macro and expect it to persist. i was caught by this. the pervious versions let you make macros for allocation and that was awesome.
 
-macros are simpler than in mouse and so they suffer from the lack of local variables.
+mouse chose to handle variables so primitively that it hurts their use and clarity. i tried to make variables with long names work. the storage is a linked list because it allows to have arrays that are bigger than 26 numbers. it's a jump in complexity. in mouse it takes one character to use a variable, in rottent - 3.
 
 the branch statement in mouse doesn't have a false part. as it turns out, its implementation is unintuitive.
 
