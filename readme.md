@@ -89,11 +89,11 @@ the symbol `=` receives a name and finds the address of the corresponding variab
 #123 #UwU=. +!   ' prints the sum of 123 and UwU
 ```
 
-the symbol `,` appends a number to the most recent definition. it's used to make arrays. the symbol `_` creates a variable even if it was defined earlier.
+the symbol `,` appends a number to the most recent definition. it's used to make arrays. the symbol `_` creates a variable even if a variable with the same name was defined earlier. the most recently defined one will be refernced.
 
 ```
 #my array_   #1, #2, #3,
-#my array=   #1+%.!" " #1+%.!" " #1%.!   ' prints "1 2 3"
+#my array=   #1+%.!" " #1+%.!" " #1+.!   ' prints "1 2 3"
 ```
 
 
@@ -103,7 +103,7 @@ a macro has to be defined before use.
 
 the definition of a macro begins with `@` and ends with `;`. it takes a name for the macro from the stack. a macro has one exit point.
 
-use `_` to create local variables. the data allocated when a macro ran will be lost.
+use `_` to create local variables. the data allocated when a macro ran will be lost, including data created with `,`.
 
 ```
 #HI@   "hell"#!" world" ;
@@ -160,7 +160,7 @@ the interpreter might abort execution in the following cases
 - an invalid character gets interpreted
 - the data stack is in an invalid state
 - control structure mismatch, including at the end of the program
-- dictionary gets full
+- the dictionary gets full
 - division by zero
 - an undefined macro is invoked
 
@@ -171,17 +171,16 @@ rottent is inspired by Mouse, a language by Peter Grogono, and so is compared to
 
 mouse doesn't shuffle stacks. at first i added stack operators for convenience, but in result the code became messy.
 
-compared to rottent, mouse has a complicated interpreter, requiring looking up the next character as well as needing a separate stack for macros.
+compared to rottent, mouse has a complicated interpreter, requiring looking up the next character as well as needing a separate stack for macros' arguments.
 
 rottent has way more primitives than mouse. still, the working interpreter written in c fits in less than 300 lines of code.
 
-the way local variables are implemented means that you can't allocate data in a macro and expect it to persist. i was caught by this. the pervious versions let you make macros for allocation and that was awesome.
+the way local variables are implemented means that you can't allocate data in a macro and expect it to persist. i was caught by this. the pervious versions let you make macros for allocating data and that was awesome.
 
 mouse chose to handle variables so primitively that it hurts their use and clarity. i tried to make variables with long names work. the storage is a linked list because it allows to have arrays that are bigger than 26 numbers. it's a jump in complexity. in mouse it takes one character to use a variable, in rottent - 3.
 
-the branch statement in mouse doesn't have a false part. as it turns out, its implementation is unintuitive.
+the branch statement in mouse doesn't have a false part. as it turns out, its implementation is unintuitive. i couldn't find use in a structuted language without a false branch.
 
 reading programs written for mouse, for a long time i thought that `!` in text literals was a writing style and not a marker for newlines. in rottent you can write newlines either directly in the text or as `#10}`.
 
 mouse didn't feel the need for single character input and output. i added this feature hoping to make the language usable. without direct access to files, this decision seems naive. in this implementation, input is realised with `getc()`, though `getch()` is desirable.
-
